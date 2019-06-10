@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/webflow
+        http://www.springframework.org/schema/webflow/spring-webflow.xsd"> 
+    <!-- 
+    <secured attributes="ROLE_REP" />
+     -->
+    <view-state id="customerCriteria">
+        <on-render>
+            <evaluate expression="customerCriteriaAction.setupForm" />
+        </on-render>
+        <transition on="search" to="searchCustomer">
+            <evaluate expression="customerCriteriaAction.bindAndValidate" />
+        </transition>
+    </view-state>
+
+    <action-state id="searchCustomer">
+        <evaluate expression="customerService.search(customerCriteria)"
+            result="flowScope.customers" />
+        <transition on="success" to="checkResultSize" />
+    </action-state>
+
+    <decision-state id="checkResultSize">
+        <if test="customers.size() == 1" then="extractResult"
+            else="customerList" />
+    </decision-state>
+
+    <action-state id="extractResult">
+        <set name="flowScope.customer" value="customers.get(0)" />
+        <transition on="success" to="customerDetails" />
+    </action-state>
+
+    <view-state id="customerList">
+        <transition on="select" to="customerDetails">
+            <evaluate
+                expression="customerService.findByCustomerId(requestParameters.customerId)"
+                result="flowScope.customer" />
+        </transition>
+        <transition on="newSearch" to="newSearch" />
+    </view-state>
+
+    <subflow-state id="customerDetails" subflow="customerDetails">
+        <input name="customer" value="flowScope.customer" />
+        <transition on="newSearch" to="newSearch" />
+    </subflow-state>
+
+    <end-state id="newSearch" />
+</flow>

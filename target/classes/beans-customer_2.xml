@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/jee
+           http://www.springframework.org/schema/jee/spring-jee.xsd">
+		<jee:remote-slsb id="customerManager" jndi-name="CustomerManagerEJB3/remote"
+			business-interface="com.perfmath.ejb3.ejb.CustomerManager">
+			<jee:environment>
+           java.naming.factory.initial=org.jboss.security.jndi.JndiLoginInitialContextFactory
+           java.naming.provider.url=localhost:1099
+           java.naming.security.principal=admin
+           java.naming.security.credentials=admin
+           </jee:environment>
+		</jee:remote-slsb>
+
+	<bean id="customerService"
+		class="com.perfmath.spring.soba.integration.ejb.CustomerServiceImpl">
+		<property name="customerManager" ref="customerManager" />
+	</bean>
+</beans>

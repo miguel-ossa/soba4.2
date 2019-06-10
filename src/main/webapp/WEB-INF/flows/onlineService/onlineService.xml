@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/webflow
+        http://www.springframework.org/schema/webflow/spring-webflow.xsd">
+
+    <view-state id="onlineService">
+        <transition on="next" to="description" />
+        <transition on="skip" to="moreInfo" />
+    </view-state>
+
+    <view-state id="description">
+        <on-render>
+            <evaluate expression="onlineService.getServices()"
+                result="requestScope.services" />
+        </on-render>
+        <transition on="next" to="moreInfo" />
+    </view-state>
+
+    <view-state id="moreInfo"/>
+</flow>

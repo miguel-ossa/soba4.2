@@ -1,0 +1,63 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:webflow="http://www.springframework.org/schema/webflow-config"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/webflow-config
+        http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.3.xsd">
+
+    <bean class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping" >
+    <property name="flowRegistry" ref="flowRegistry" />
+    <property name ="order" value="1" />
+    </bean>
+
+    <bean name="flowHandlerAdapter" class="org.springframework.webflow.mvc.servlet.FlowHandlerAdapter">
+     <property name="flowExecutor" ref="flowExecutor" />
+     </bean>
+
+    <webflow:flow-registry id="flowRegistry">
+        <webflow:flow-location
+            path="/WEB-INF/flows/onlineService/onlineService.xml" />
+        <webflow:flow-location
+            path="/WEB-INF/flows/customerSearch/customerSearch.xml" />
+        <webflow:flow-location
+            path="/WEB-INF/flows/customerDetails/customerDetails.xml" />
+        <webflow:flow-location
+            path="/WEB-INF/flows/transferMoney/transferMoney.xml" />
+    </webflow:flow-registry>
+    
+    <webflow:flow-executor id="flowExecutor">
+        <webflow:flow-execution-listeners>
+            <webflow:listener ref="securityFlowExecutionListener" />
+            <webflow:listener ref="jpaFlowExecutionListener" />
+        </webflow:flow-execution-listeners>
+    </webflow:flow-executor>
+
+    <bean id="securityFlowExecutionListener"
+        class="org.springframework.webflow.security.SecurityFlowExecutionListener" />
+
+    <bean id="jpaFlowExecutionListener"
+        class="org.springframework.webflow.persistence.JpaFlowExecutionListener">
+        <constructor-arg ref="entityManagerFactory" />
+        <constructor-arg ref="jpaTransactionManager" />
+    </bean>
+    <bean id="customerCriteriaAction"
+        class="org.springframework.webflow.action.FormAction">
+        <property name="formObjectClass"
+            value="com.perfmath.spring.soba.webflow.domain.CustomerCriteria" />
+        <property name="propertyEditorRegistrar">
+            <bean
+                class="com.perfmath.spring.soba.webflow.web.PropertyEditors" />
+        </property>
+    </bean>
+
+    <bean id="transferMoneyAction"
+        class="org.springframework.webflow.action.FormAction">
+        <property name="formObjectClass" value="com.perfmath.spring.soba.model.domain.TransferRecord" />
+        <property name="propertyEditorRegistrar">
+            <bean class="com.perfmath.spring.soba.webflow.web.PropertyEditors" />
+        </property>
+        <property name="validator"> <bean class="com.perfmath.spring.soba.webflow.services.TransferRecordValidator" />
+        </property>
+    </bean>
+</beans>

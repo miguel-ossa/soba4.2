@@ -1,0 +1,331 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security.xsd">
+	<global-method-security pre-post-annotations="enabled"
+		secured-annotations="enabled">
+		<expression-handler ref="expressionHandler" />
+	</global-method-security>
+
+	<http use-expressions="true">
+		<!--   intercept-url pattern="/**" requires-channel="https" / -->
+		<csrf disabled="true"/>
+		<intercept-url pattern="/**" />
+		<http-basic />
+		<custom-filter position="FORM_LOGIN_FILTER" ref="formLoginFilter" />
+		<session-management>
+			<concurrency-control max-sessions="10"
+				error-if-maximum-exceeded="true" />
+		</session-management>
+		<logout logout-success-url="/logoff.jsp" />
+
+	</http>
+<!--  
+  <beans:bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" id="encoder"></beans:bean>  
+    <authentication-manager>  
+        <authentication-provider user-service-ref="customUserDetailsService">  
+           <password-encoder ref="encoder"></password-encoder>  
+      </authentication-provider>  
+    </authentication-manager>  
+-->
+<beans:bean id="bcrypt" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" >
+  	<beans:constructor-arg name="strength" value="10" />
+  </beans:bean>
+	<authentication-manager alias="authenticationManager">
+		<authentication-provider>
+			<password-encoder ref="bcrypt" />
+			<jdbc-user-service data-source-ref="dataSource"
+				users-by-username-query="SELECT username, password, enabled FROM users WHERE username = ?" 
+				authorities-by-username-query="SELECT username, authority FROM authorities WHERE username = ?" />
+		</authentication-provider>
+	</authentication-manager>
+
+	<beans:bean id="springSecurityFilterChain"
+		class="org.springframework.security.web.FilterChainProxy">
+		<filter-chain-map>
+			<filter-chain pattern="/images/**" filters="none" />
+			<filter-chain pattern="/rest*/**"
+				filters="
+           securityContextPersistenceFilterWithASCFalse,
+           basicAuthenticationFilter,
+           exceptionTranslationFilter,
+           filterSecurityInterceptor" />
+			<filter-chain pattern="/**"
+				filters="
+           securityContextPersistenceFilterWithASCTrue,
+           formLoginFilter,
+           exceptionTranslationFilter,
+           filterSecurityInterceptor" />
+		</filter-chain-map>
+	</beans:bean>
+	<beans:bean id="securityContextPersistenceFilterWithASCFalse"
+		class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
+	</beans:bean>
+
+	<beans:bean id="securityContextPersistenceFilterWithASCTrue"
+		class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
+	</beans:bean>
+
+	<!-- form based authentication -->
+
+	<beans:bean id="formLoginFilter"
+		class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
+		<beans:property name="authenticationManager" ref="authenticationManager" />
+		<beans:property name="authenticationSuccessHandler">
+			<beans:bean
+				class="org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler">
+				<beans:property name="defaultTargetUrl" value="/loginBroker.htm"></beans:property>
+			</beans:bean>
+		</beans:property>
+		<beans:property name="filterProcessesUrl" value="/j_spring_security_check" />
+	</beans:bean>
+
+	<beans:bean id="formAuthenticationEntryPoint"
+		class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+		<!--  beans:property name="loginFormUrl" value="/login.jsp" / -->
+		<beans:constructor-arg value="/login.jsp" />
+		<!--   beans:property name="forceHttps" value="true" / -->
+		<!--  beans:property name="forceHttps" value="false" / -->
+	</beans:bean>
+ 
+	<beans:bean id="formExceptionTranslationFilter"
+		class="org.springframework.security.web.access.ExceptionTranslationFilter">
+		<!--  
+		<beans:property name="authenticationEntryPoint" ref="formAuthenticationEntryPoint" />
+		<beans:property name="accessDeniedHandler" ref="formAccessDeniedHandler" />
+		-->
+		<beans:constructor-arg ref="formAuthenticationEntryPoint" />
+		<beans:constructor-arg ref="requestCache" />
+		<!--  beans:constructor-arg ref="formAccessDeniedHandler" /-->
+	</beans:bean>
+	<!--  
+<beans:bean id="exceptionTranslator"
+	class="org.springframework.security.web.access.ExceptionTranslationFilter">
+	<beansproperty name="requestCache" ref="myRequestCache" />
+</beans:bean>
+-->
+	<beans:bean id="requestCache"
+		class="org.springframework.security.web.savedrequest.HttpSessionRequestCache">
+	</beans:bean>
+	<beans:bean id="formAccessDeniedHandler"
+		class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
+		<beans:property name="errorPage" value="/login.jsp?error=true" />
+	</beans:bean>
+
+	<!-- basic authentication -->
+<!--  
+	<beans:bean id="basicAuthenticationFilter"
+		class="org.springframework.security.web.authentication.www.BasicAuthenticationFilter">
+		<beans:property name="authenticationManager">
+			<beans:ref bean="authenticationManager" />
+		</beans:property>
+		<beans:property name="authenticationEntryPoint">
+			<beans:ref bean="basicAuthenticationEntryPoint" />
+		</beans:property>
+	</beans:bean>
+-->		
+	<beans:bean id="entryPoint"
+		class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
+		<beans:property name="realmName" value="perfmath.com" />
+		<!--  beans:constructor-arg value="perfmath.com" /-->
+	</beans:bean>
+		
+	<beans:bean id="basicAuthenticationFilter"
+		class="org.springframework.security.web.authentication.www.BasicAuthenticationFilter">
+		<beans:constructor-arg ref="authenticationManager" />
+		<beans:constructor-arg ref="entryPoint" />
+	</beans:bean>
+	
+	<beans:bean id="basicAccessDeniedHandler"
+		class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
+	</beans:bean>
+	
+	<beans:bean id="basicExceptionTranslationFilter"
+		class="org.springframework.security.web.access.ExceptionTranslationFilter">
+		<beans:constructor-arg ref="entryPoint" />
+		<beans:constructor-arg ref="requestCache" />
+		<!--  
+		<beans:property name="authenticationEntryPoint" ref="entryPoint" />
+		<beans:property name="accessDeniedHandler" ref="basicAccessDeniedHandler" />
+		-->
+	</beans:bean>
+
+	<!-- security  -->
+	
+	<beans:bean id="accessDecisionManager"
+		class="org.springframework.security.access.vote.AffirmativeBased">
+		<!--  
+		<beans:property name="decisionVoters">
+			<beans:list>
+				<beans:bean class="org.springframework.security.access.vote.RoleVoter" />
+				<beans:bean
+					class="org.springframework.security.access.vote.AuthenticatedVoter" />
+			</beans:list>
+		</beans:property>
+		-->
+		<beans:constructor-arg>
+			<beans:list>
+				<beans:bean class="org.springframework.security.access.vote.RoleVoter" />
+				<beans:bean
+					class="org.springframework.security.access.vote.AuthenticatedVoter" />
+			</beans:list>
+		</beans:constructor-arg>
+	</beans:bean>
+	
+	<beans:bean id="expressionHandler"
+		class="org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler">
+		<beans:property name="permissionEvaluator" ref="permissionEvaluator" />
+	</beans:bean>
+	
+	<beans:bean id="filterSecurityInterceptor"
+		class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+
+		<beans:property name="authenticationManager" ref="authenticationManager" />
+		<beans:property name="accessDecisionManager" ref="accessDecisionManager" />
+
+		<beans:property name="securityMetadataSource">
+			<security:filter-security-metadata-source use-expressions="false">
+				<security:intercept-url pattern="/rest*/**" access="ROLE_REST,ROLE_CUST,ROLE_REP" />
+				<security:intercept-url pattern="/login.jsp" access="ROLE_ANONYMOUS,ROLE_CUST,ROLE_REP,ROLE_ADMIN" />
+				<security:intercept-url pattern="/images/**" access="ROLE_ANONYMOUS,ROLE_CUST,ROLE_REP,ROLE_ADMIN" />
+				<security:intercept-url pattern="/admin.htm*" access="ROLE_ADMIN" />
+				<security:intercept-url pattern="/**" access="ROLE_CUST,ROLE_REP,ROLE_ADMIN" />
+			</security:filter-security-metadata-source>
+		</beans:property>
+	</beans:bean>
+
+	<beans:bean id="permissionEvaluator"
+		class="org.springframework.security.acls.AclPermissionEvaluator">
+		<beans:constructor-arg ref="aclService" />
+	</beans:bean>
+	<!-- ACL start: ACL SERVICE DEFINITIONS -->
+<!--  
+	<beans:bean id="aclCache"
+		class="org.springframework.security.acls.domain.EhCacheBasedAclCache">
+		<beans:constructor-arg>
+			<beans:bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+				<beans:property name="cacheManager">
+					<beans:bean
+						class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" />
+				</beans:property>
+				<beans:property name="cacheName" value="aclCache" />
+			</beans:bean>
+		</beans:constructor-arg>
+	</beans:bean>
+-->
+<beans:bean id="aclCache" class="org.springframework.security.acls.domain.EhCacheBasedAclCache">
+<beans:constructor-arg>
+	<beans:bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+	<beans:property name="cacheManager">
+		<beans:bean class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"/>
+	</beans:property>
+	<beans:property name="cacheName" value="aclCache"/>
+	</beans:bean>
+</beans:constructor-arg>
+<!--  this part must be included in order to have ehCcahe instantiated properly -->
+<beans:constructor-arg>
+	<beans:bean class="org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy">
+		<beans:constructor-arg>
+			<beans:bean class="org.springframework.security.acls.domain.ConsoleAuditLogger"/>
+		</beans:constructor-arg>
+	</beans:bean>
+</beans:constructor-arg>
+<beans:constructor-arg>
+	<beans:bean class="org.springframework.security.acls.domain.AclAuthorizationStrategyImpl">
+		<beans:constructor-arg>
+			<beans:list>
+				<beans:bean class="org.springframework.security.core.authority.SimpleGrantedAuthority">
+					<beans:constructor-arg value="ROLE_ACL_ADMIN"/>
+				</beans:bean>
+			</beans:list>
+		</beans:constructor-arg>
+	</beans:bean>
+</beans:constructor-arg>
+
+</beans:bean>
+	<beans:bean id="lookupStrategy"
+		class="org.springframework.security.acls.jdbc.BasicLookupStrategy">
+		<beans:constructor-arg ref="dataSource" />
+		<beans:constructor-arg ref="aclCache" />
+		<beans:constructor-arg>
+			<beans:bean
+				class="org.springframework.security.acls.domain.AclAuthorizationStrategyImpl">
+				<beans:constructor-arg>
+					<beans:list>
+						<beans:bean
+							class="org.springframework.security.core.authority.SimpleGrantedAuthority">
+							<beans:constructor-arg value="ROLE_ADMIN" />
+						</beans:bean>
+						<beans:bean
+							class="org.springframework.security.core.authority.SimpleGrantedAuthority">
+							<beans:constructor-arg value="ROLE_ADMIN" />
+						</beans:bean>
+						<beans:bean
+							class="org.springframework.security.core.authority.SimpleGrantedAuthority">
+							<beans:constructor-arg value="ROLE_ADMIN" />
+						</beans:bean>
+					</beans:list>
+				</beans:constructor-arg>
+			</beans:bean>
+
+		</beans:constructor-arg>
+		<beans:constructor-arg>
+			<beans:bean
+				class="org.springframework.security.acls.domain.ConsoleAuditLogger" />
+		</beans:constructor-arg>
+	</beans:bean>
+
+	<beans:bean id="aclService"
+		class="org.springframework.security.acls.jdbc.JdbcMutableAclService">
+		<beans:constructor-arg ref="dataSource" />
+		<beans:constructor-arg ref="lookupStrategy" />
+		<beans:constructor-arg ref="aclCache" />
+		<beans:property name="sidIdentityQuery"
+			value="SELECT max(id) FROM acl_sid" />
+		<beans:property name="classIdentityQuery"
+			value="SELECT max(id) FROM acl_class" />
+		<!-- 
+		<beans:property name="sidIdentityQuery"
+			value="select currval(pg_get_serial_sequence('acl_sid', 'id'))" />
+		<beans:property name="classIdentityQuery"
+			value="select currval(pg_get_serial_sequence('acl_class', 'id'))" />
+		-->
+	</beans:bean>
+	<!--  
+			<beans:property name="sidIdentityQuery"
+			value="SELECT CURRVAL FROM mysqlsequence WHERE NAME = 'ACL_SID_ID_SEQ'" />
+		<beans:property name="classIdentityQuery"
+			value="SELECT CURRVAL FROM mysqlsequence WHERE NAME = 'ACL_CLASS_ID_SEQ'" />
+			
+	<beans:bean id="aclTxDeleteVoter" class="org.springframework.security.vote.AclEntryVoter"> 
+		<beans:constructor-arg ref="aclService" /> 
+		<beans:constructor-arg value="ACL_TX_DELETE" />
+		<beans:constructor-arg> 
+		<beans:list> 
+		<util:constant 
+			static-field="org.springframework.security.acls.domain.BasePermission.ADMINISTRATION" />
+			<util:constant static-field="org.springframework.security.acls.domain.BasePermission.DELETE" /> 
+			</beans:list> 
+			</beans:constructor-arg> 
+			<beans:property name="processDomainObjectClass" 
+		value="com.perfmath.odps.soba.model.vo.Transaction" /> 
+	</beans:bean> 
+	
+	<beans:bean id="aclAccessDecisionManager" class="org.springframework.security.vote.AffirmativeBased"> 
+		<beans:property name="decisionVoters"> 
+		<beans:list> 
+		<beans:bean class="org.springframework.security.vote.RoleVoter" />
+		<beans:ref local="aclTxDeleteVoter" /> 
+		</beans:list>
+		</beans:property> 
+	</beans:bean> 
+	-->
+
+</beans:beans>

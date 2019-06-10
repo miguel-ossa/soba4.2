@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/aop 
+           http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx.xsd">
+	<bean id="sobaConfig" class="com.perfmath.spring.soba.service.SobaConfig">
+		<property name="databaseVendor" value="mysql" />
+	</bean>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="initialSize" value="5" />
+		<property name="maxActive" value="20" />
+	</bean>
+
+	<bean id="activityManager" class="com.perfmath.spring.soba.service.SimpleActivityManager">
+		<property name="activityDao" ref="activityDao" />
+	</bean>
+	<bean id="transferManager" class="com.perfmath.spring.soba.service.SimpleTransferManager">
+		<property name="transferDao" ref="transferDao" />
+		<property name="bankingTxDao" ref="bankingTxDao" />
+	</bean>
+	<bean id="activityDao" class="com.perfmath.spring.soba.model.dao.JdbcActivityDao">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="customerManager" class="com.perfmath.spring.soba.service.SimpleCustomerManager">
+		<property name="customerDao" ref="customerDao" />
+	</bean>
+
+	<bean id="customerDao" class="com.perfmath.spring.soba.model.dao.JdbcCustomerDao">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="transferDao" class="com.perfmath.spring.soba.model.dao.JdbcTransferDao">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="accountManager" class="com.perfmath.spring.soba.service.SimpleAccountManager">
+		<property name="accountDao" ref="accountDao" />
+	</bean>
+
+	<bean id="accountDao" class="com.perfmath.spring.soba.model.dao.JdbcAccountDao">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="loginUserManager" class="com.perfmath.spring.soba.service.SimpleLoginUserManager">
+		<property name="loginUserDao" ref="loginUserDao" />
+	</bean>
+
+	<bean id="loginUserDao" class="com.perfmath.spring.soba.model.dao.JdbcLoginUserDao">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="txManager" class="com.perfmath.spring.soba.service.SimpleTxManager">
+		<property name="bankingTxDao" ref="bankingTxDao" />
+		<property name="accountManager" ref="accountManager" />
+		<!-- property name="mutableAclService" ref="aclService"/ -->
+	</bean>
+	<bean id="billPayManager" class="com.perfmath.spring.soba.service.SimpleBillPayManager">
+		<property name="billPaymentDao" ref="billPaymentDao" />
+		<property name="aclTxManager" ref="aclTxManager" />
+		<!-- property name="mutableAclService" ref="aclService"/ -->
+	</bean>
+	<bean id="billPaymentDao"
+		class="com.perfmath.spring.soba.model.dao.HibernateBillPaymentDao">
+	</bean>
+	<bean id="aclTxManager" class="com.perfmath.spring.soba.service.SimpleAclTxManager">
+		<property name="aclBankingTxDao" ref="aclBankingTxDao" />
+		<property name="loginUserDao" ref="loginUserDao" />
+		<property name="accountDao" ref="accountDao" />
+		<property name="accountManager" ref="accountManager" />
+		<property name="mutableAclService" ref="aclService" />
+	</bean>
+	<bean id="userDetailsService"
+		class="org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="bankingTxDao" class="com.perfmath.spring.soba.model.dao.JdbcBankingTxDao">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="aclBankingTxDao" class="com.perfmath.spring.soba.model.dao.JdbcAclBankingTxDao">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+	<tx:annotation-driven />
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+</beans>

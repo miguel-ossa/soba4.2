@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans.xsd">     
+	<bean id="customerManager" class="org.springframework.ejb.access.SimpleRemoteStatelessSessionProxyFactoryBean">
+		<property name="jndiEnvironment">
+		<props>
+		<prop key="java.naming.factory.initial">org.jboss.security.jndi.JndiLoginInitialContextFactory</prop>
+		<prop key="java.naming.provider.url">localhost:1099</prop>
+		<prop key="java.naming.security.principal">admin</prop>
+		<prop key="java.naming.security.credentials">admin</prop>
+		</props>
+		</property>
+		<property name="jndiName" value="CustomerManagerEJB3/remote" />
+		<property name="businessInterface" value="com.perfmath.ejb3.ejb.CustomerManager" />
+	</bean>
+	<bean id="customerService" class="com.perfmath.spring.soba.integration.ejb.CustomerServiceImpl">
+		<property name="customerManager" ref="customerManager" />
+	</bean>
+	</beans>
