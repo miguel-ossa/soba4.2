@@ -9,7 +9,7 @@ public class TestAppContext {
 
 	public static void main (String[] args) {
 		ApplicationContext context = new ClassPathXmlApplicationContext ("myBeans.xml");
-		//ApplicationContext context = new FileSystemXmlApplicationContext ("myBeans.xml");
+		//ApplicationContext context = new FileSystemXmlApplicationContext ("src/main/resources/myBeans.xml");
 		SobaConfig sobaConfig = context.getBean("sobaConfig", SobaConfig.class);
 		System.out.println ("Database vendor for SOBA: " + sobaConfig.getDatabaseVendor());
 		// no need to use the getBean method
