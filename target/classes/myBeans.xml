@@ -6,4 +6,4 @@
 	<bean id="sobaConfig" class="com.perfmath.spring.soba.service.SobaConfig">
 		<property name="databaseVendor" value="mysql" />
 	</bean>
-	</beans>
+</beans>
