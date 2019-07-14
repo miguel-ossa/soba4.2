@@ -7,8 +7,8 @@ import com.perfmath.spring.soba.service.SobaConfig;
 
 public class TestAppContext {
 
-	@SuppressWarnings("resource")
 	public static void main (String[] args) {
+		@SuppressWarnings({ "unused", "resource" })
 		ApplicationContext context = new ClassPathXmlApplicationContext ("myBeans.xml");
 		//ApplicationContext context = new FileSystemXmlApplicationContext ("src/main/resources/myBeans.xml");
 		//SobaConfig sobaConfig = context.getBean("sobaConfig", SobaConfig.class);
