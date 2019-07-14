@@ -7,12 +7,13 @@ import com.perfmath.spring.soba.service.SobaConfig;
 
 public class TestAppContext {
 
+	@SuppressWarnings("resource")
 	public static void main (String[] args) {
 		ApplicationContext context = new ClassPathXmlApplicationContext ("myBeans.xml");
 		//ApplicationContext context = new FileSystemXmlApplicationContext ("src/main/resources/myBeans.xml");
-		SobaConfig sobaConfig = context.getBean("sobaConfig", SobaConfig.class);
-		System.out.println ("Database vendor for SOBA: " + sobaConfig.getDatabaseVendor());
+		//SobaConfig sobaConfig = context.getBean("sobaConfig", SobaConfig.class);
+		//System.out.println ("Database vendor for SOBA: " + sobaConfig.getDatabaseVendor());
 		// no need to use the getBean method
-		//System.out.println ("Database vendor for SOBA: " + SobaConfig.getDatabaseVendor());
+		System.out.println ("Database vendor for SOBA: " + SobaConfig.getDatabaseVendor());
 	}
 }
