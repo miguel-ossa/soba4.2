@@ -301,6 +301,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.webflow.version>2.4.2.RELEASE</spring.webflow.version>
 		<ehcache.version>2.10.0</ehcache.version>
-		<httpclient.version>4.5</httpclient.version>
+		<httpclient.version>4.5.13</httpclient.version>
 	</properties>
 </project>
