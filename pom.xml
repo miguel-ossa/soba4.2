@@ -299,7 +299,7 @@
 		<jackson-mapper-asl.version>1.9.13</jackson-mapper-asl.version>
 		<jaxb-api.version>2.2.12</jaxb-api.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.webflow.version>2.4.2.RELEASE</spring.webflow.version>
+		<spring.webflow.version>2.4.6.RELEASE</spring.webflow.version>
 		<ehcache.version>2.10.0</ehcache.version>
 		<httpclient.version>4.5</httpclient.version>
 	</properties>
