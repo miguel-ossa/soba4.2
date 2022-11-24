@@ -291,7 +291,7 @@
 </dependency>            
 	</dependencies>
 	<properties>
-		<hibenate.version>5.0.1.Final</hibenate.version>
+		<hibenate.version>5.3.20.Final</hibenate.version>
 		<aspectj.version>1.7.3</aspectj.version>
 		<org.springframework.version>4.2.1.RELEASE</org.springframework.version>
 		<spring-mock.version>2.0.8</spring-mock.version>
